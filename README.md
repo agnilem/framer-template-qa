@@ -6,4 +6,6 @@ A Claude skill that QAs a Framer template before it goes on the Framer Marketpla
 npx skills add agnilem/framer-template-qa
 ```
 
+Page: https://skills.startfrom.co
+
 By [Alex Prokhorov](https://x.com/alexprokhorov)
