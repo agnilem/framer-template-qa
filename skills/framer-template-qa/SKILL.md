@@ -1,6 +1,6 @@
 ---
 name: framer-template-qa
-description: QA a Framer template before it goes on the Framer Marketplace. Inspect the canvas, the served HTML and the live site, fix clear defects in the editor, add a buyer Getting started guide, and report findings ranked by what a buyer would hit. Use when asked to QA, audit, check, or prepare a Framer template for the Marketplace or for sale.
+description: QA a Framer template before it goes on the Framer Marketplace. Inspect the canvas, the served HTML and the live site, check SEO and AEO (search and AI-answer readiness), fix clear defects in the editor, add a buyer Getting started guide, and report findings ranked by what a buyer would hit. Use when asked to QA, audit, check, or prepare a Framer template for the Marketplace or for sale.
 ---
 
 # Framer template QA
@@ -29,10 +29,11 @@ The full method is in the Playbook section below: the severity model, the three 
 2. **Lens 1, canvas.** Dump each page tree once and analyse locally: heading tags per breakpoint, inline styles vs presets, alt text, links, form fields, unused components and fonts, element IDs that code depends on.
 3. **Lens 2, served HTML.** Curl every page: titles, descriptions, OG images, H1 count, noindex on 404, real hrefs. Divide repeated markup by the breakpoint count before calling anything duplicated.
 4. **Lens 3, live browser.** Every page at 390, 810 and 1280px: horizontal overflow, clipped text, menus, toggles, filters, forms. Measure, don't eyeball.
-5. **Beyond the site.** Licences of code files and fonts, originality and fit, support and listing facts, and the buyer guide (see "Beyond the site" in the Playbook below).
-6. **Fix** confirmed defects with clear solutions: spelling, overflow, broken links with an unambiguous destination, CMS bindings, alt text, form labels, style inconsistencies. Re-read each change after writing it and check all three breakpoints.
-7. **Buyer guide.** Add a "Getting started" editor-only Design page (never a public route) covering pages and shared layout, styles, CMS fields and filters, form Send To, and every code-driven section with what must not be renamed. Describe only what you inspected. Keep the layout minimal until a designed guide layout exists.
-8. **Report** in this order: Fixed and verified · Changed, verification pending · Needs your input · Optional improvements · Verification coverage (passed vs not tested). Every finding carries evidence. Never claim the whole template is ready because a subset passed.
+5. **SEO and AEO.** Page settings, robots.txt, JSON-LD, served HTML, sitemap, canonicals, 404 status, Markdown output, and whether the copy states what the product is, for whom and at what price (see "SEO and AEO" in the Playbook below).
+6. **Beyond the site.** Licences of code files and fonts, originality and fit, support and listing facts, and the buyer guide (see "Beyond the site" in the Playbook below).
+7. **Fix** confirmed defects with clear solutions: spelling, overflow, broken links with an unambiguous destination, CMS bindings, alt text, form labels, style inconsistencies. Re-read each change after writing it and check all three breakpoints.
+8. **Buyer guide.** Add a "Getting started" editor-only Design page (never a public route) covering pages and shared layout, styles, CMS fields and filters, form Send To, SEO and AEO setup, and every code-driven section with what must not be renamed. Describe only what you inspected. Keep the layout minimal until a designed guide layout exists.
+9. **Report** in this order: Fixed and verified · Changed, verification pending · Needs your input · Optional improvements · Verification coverage (passed vs not tested). Every finding carries evidence. Never claim the whole template is ready because a subset passed.
 
 ## Playbook
 
@@ -162,7 +163,7 @@ Check these first. Frequency is out of the three audited templates.
 - Type tiers, printed as a table.
 - Dark mode token coverage, if a theme toggle ships.
 - Retina: source width vs rendered width, target 2x. Hero backgrounds are the usual miss.
-- Per-page titles, descriptions, OG images, `noindex` on `/404`, JSON-LD.
+- Per-page titles, descriptions, OG images, `noindex` on `/404`, JSON-LD. Full SEO and AEO checks: see SEO and AEO below.
 
 #### Cosmetic / hygiene
 
@@ -174,11 +175,55 @@ Check these first. Frequency is out of the three audited templates.
 
 ---
 
+### SEO and AEO
+
+Written Sep 30 2026 from official docs fetched that day. Search and AI-answer rules change fast: re-check the linked sources before relying on any line here, and never add a numeric rule (title length, word count) that a source does not state.
+
+The model: AI answers (Google AI Overviews and AI Mode, ChatGPT search, Perplexity, Claude, Copilot) are built on the same foundations as search. Google says a page only needs to be indexed and eligible for a snippet, and that structured data, llms.txt and "AI rewrites" are not required ([AI features](https://developers.google.com/search/docs/appearance/ai-features), [AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)). So the job is: crawlable, rendered on the server, clearly described, specific content.
+
+#### Canvas (Page Settings and site settings)
+
+- Every page has its own title, description and 1200×630 social image. CMS detail pages fill them from fields (`{{Title}}`, `{{Excerpt}}`, cover image) ([Framer: CMS meta](https://www.framer.com/help/articles/how-can-i-add-meta-titles-and-descriptions-to-each-cms-item/)). Titles descriptive and distinct, descriptions unique summaries ([title links](https://developers.google.com/search/docs/appearance/title-link), [snippets](https://developers.google.com/search/docs/appearance/snippet)).
+- "Search engines" stays on for every real page; off only for 404 and utility pages ([Framer: noindex](https://www.framer.com/help/articles/how-do-i-prevent-specific-pages-from-getting-indexed-by-search-engines/)). A leftover noindex on a real page ships to every buyer.
+- No custom robots.txt that blocks Googlebot, Bingbot, OAI-SearchBot, PerplexityBot or Claude-SearchBot. Blocking OAI-SearchBot removes a site from ChatGPT search answers, blocking PerplexityBot from Perplexity results, blocking Claude-SearchBot reduces Claude search visibility ([OpenAI bots](https://developers.openai.com/api/docs/bots), [Perplexity crawlers](https://docs.perplexity.ai/docs/resources/perplexity-crawlers), [Anthropic crawlers](https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler)). Training crawlers (GPTBot, ClaudeBot, Google-Extended, Applebot-Extended) are a separate choice and do not affect search inclusion.
+- JSON-LD via custom code in the head ([Framer: JSON-LD](https://www.framer.com/help/articles/structured-data-through-json-ld/)): Organization on the site, Article on blog CMS pages with `{{field}}` values, Breadcrumb where it fits. These are in Google's supported list ([search gallery](https://developers.google.com/search/docs/appearance/structured-data/search-gallery)). FAQ rich results stopped showing on May 7 2026 and HowTo is long gone ([updates](https://developers.google.com/search/updates)): never sell FAQ or HowTo markup as a feature.
+- Meaningful images are real images with descriptive alt text, not CSS backgrounds; Google does not index CSS images ([image SEO](https://developers.google.com/search/docs/appearance/google-images)).
+- Links are real links with descriptive anchor text ([crawlable links](https://developers.google.com/search/docs/crawling-indexing/links-crawlable)). A grid of "Read" or "Learn more" buttons with no descriptive text is a finding.
+
+#### Served HTML
+
+- The words are in the server HTML. Framer pre-renders pages ([Framer: AI agents](https://www.framer.com/help/articles/make-site-readable-by-ai-agents/)), but verify: Lapse once served /terms and /privacy as an empty shell. None of the AI crawler docs say whether they run JavaScript, so treat the served HTML as all they see.
+- Per page: one `<title>`, a meta description, og:image, and a self-referencing absolute canonical on the custom domain ([canonicals](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), [Framer: canonical](https://www.framer.com/help/articles/setting-up-a-custom-canonical-url-in-framer/)).
+- `/sitemap.xml` lists every real page and CMS item and nothing noindexed ([sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), [Framer: sitemap](https://www.framer.com/help/articles/how-can-i-access-the-sitemap-xml-file/)).
+- Missing URLs return a real 404 status, not a 200 ([JS SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)).
+- Machine-readable copy: `curl -H "Accept: text/markdown"` (or add `?md`) returns a Markdown version of an optimized Framer page ([Framer: AI agents](https://www.framer.com/help/articles/make-site-readable-by-ai-agents/)). Check it reads cleanly; it is what agents fetching the page get.
+
+#### Content (what AI answers quote)
+
+- Each page states plainly, near the top, what the product is, who it is for and what it costs. Answers are assembled from specific, "non-commodity" text, not slogans ([AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)).
+- Headings describe their section. FAQ answers are visible text, one question per item.
+- Blog posts carry an author, a date and a clear title; About names real (or clearly placeholder) people ([helpful content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)).
+- Placeholder copy is obviously placeholder, so buyers replace it rather than ship it.
+
+#### Buyer guide
+
+The Getting started page gets an SEO and AEO card: fill page titles, descriptions and social images; keep "Search engines" on for real pages; connect the custom domain; add the site to Google Search Console (its "Search generative AI" setting is on by default) and Bing Webmaster Tools; do not block OAI-SearchBot, PerplexityBot or Claude-SearchBot if the site should appear in AI answers.
+
+#### Not needed (do not recommend)
+
+- llms.txt: Google says it ignores it, and OpenAI, Anthropic and Perplexity publish no support for it. Framer lets you upload one ([Framer: llms.txt](https://www.framer.com/help/articles/llms-txt-framer/)); optional, never a finding.
+- Rewriting or "chunking" content for AI, pages per query variant (Google calls that scaled content abuse), fixed word counts or page lengths ([AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)).
+- Sitemap priority and changefreq (Google ignores them), meta keywords.
+
+#### Severity
+
+Costs you a sale: noindex on a real page, a robots.txt that blocks search or AI search crawlers, content missing from the served HTML. Worth doing before release: titles, descriptions, social images, canonicals, sitemap, 404 status, JSON-LD, alt text, anchor text, the buyer-guide card. Cosmetic: Markdown output tidiness.
+
 ### Beyond the site
 
 Four checks added Sep 2026 from Framer's template best-practices list (https://www.framer.com/help/articles/template-best-practices/). They cover what a buyer meets after the remix, which the three lenses above do not.
 
-1. **Buyer guide.** Every template ships a "Getting started" editor-only Design page: pages and shared layout, color and text styles, CMS fields and filters, form Send To, and every code-driven section with what must not be renamed (element IDs, fixed item counts). Build it with the template's own styles, describe only what you inspected, and never add a public route. Lapse was the first (Sep 30 2026). **Open design task:** the current layout (a plain 2-column card grid) is a placeholder until a designed, reusable guide layout exists. Until then, write the content and keep the layout minimal.
+1. **Buyer guide.** Every template ships a "Getting started" editor-only Design page: pages and shared layout, color and text styles, CMS fields and filters, form Send To, SEO and AEO setup, and every code-driven section with what must not be renamed (element IDs, fixed item counts). Build it with the template's own styles, describe only what you inspected, and never add a public route. Lapse was the first (Sep 30 2026). **Open design task:** the current layout (a plain 2-column card grid) is a placeholder until a designed, reusable guide layout exists. Until then, write the content and keep the layout minimal.
 2. **Licences.** List every code file's origin and licence from its header, plus uploaded fonts. MIT + Commons Clause (React Bits, Canvas UI) forbids redistribution and travels with every remix; commercial fonts left uploaded but unused travel too. Report as Needs input, never delete or replace unasked.
 3. **Originality and fit.** One line on who the template is for and what it does beyond native Framer. If the answer is thin, flag it before the listing is written, not after.
 4. **Support and listing facts.** Contact route, refund terms, and requirements (CMS plan, WebGPU fallbacks) are stated in the listing and match the template. Assess only from evidence; never invent terms.
