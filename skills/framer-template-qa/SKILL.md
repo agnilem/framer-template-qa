@@ -1,6 +1,6 @@
 ---
 name: framer-template-qa
-description: QA a Framer template before it goes on the Framer Marketplace. Inspect the canvas, the served HTML and the live site, check SEO and AEO (search and AI-answer readiness), fix clear defects in the editor, add a buyer Getting started guide, and report findings ranked by what a buyer would hit. Use when asked to QA, audit, check, or prepare a Framer template for the Marketplace or for sale.
+description: QA a Framer template before it goes on the Framer Marketplace. Inspect the canvas, the served HTML and the live site, check SEO and AEO (search and AI-answer readiness), measure performance with Lighthouse and PageSpeed Insights, fix clear defects in the editor, add a buyer Getting started guide, and report findings ranked by what a buyer would hit. Use when asked to QA, audit, check, or prepare a Framer template for the Marketplace or for sale.
 ---
 
 # Framer template QA
@@ -30,10 +30,11 @@ The full method is in the Playbook section below: the severity model, the three 
 3. **Lens 2, served HTML.** Curl every page: titles, descriptions, OG images, H1 count, noindex on 404, real hrefs. Divide repeated markup by the breakpoint count before calling anything duplicated.
 4. **Lens 3, live browser.** Every page at 390, 810 and 1280px: horizontal overflow, clipped text, menus, toggles, filters, forms. Measure, don't eyeball.
 5. **SEO and AEO.** Page settings, robots.txt, JSON-LD, served HTML, sitemap, canonicals, 404 status, Markdown output, and whether the copy states what the product is, for whom and at what price (see "SEO and AEO" in the Playbook below).
-6. **Beyond the site.** Licences of code files and fonts, originality and fit, support and listing facts, and the buyer guide (see "Beyond the site" in the Playbook below).
-7. **Fix** confirmed defects with clear solutions: spelling, overflow, broken links with an unambiguous destination, CMS bindings, alt text, form labels, style inconsistencies. Re-read each change after writing it and check all three breakpoints.
-8. **Buyer guide.** Add a "Getting started" editor-only Design page (never a public route) covering pages and shared layout, styles, CMS fields and filters, form Send To, SEO and AEO setup, and every code-driven section with what must not be renamed. Describe only what you inspected. Keep the layout minimal until a designed guide layout exists.
-9. **Report** in this order: Fixed and verified · Changed, verification pending · Needs your input · Optional improvements · Verification coverage (passed vs not tested). Every finding carries evidence. Never claim the whole template is ready because a subset passed.
+6. **Performance.** Local Lighthouse (three runs, median) to find causes, then PageSpeed Insights on mobile and desktop for the number a buyer will see. Fixes never change the design (see "Performance" in the Playbook below).
+7. **Beyond the site.** Licences of code files and fonts, originality and fit, support and listing facts, and the buyer guide (see "Beyond the site" in the Playbook below).
+8. **Fix** confirmed defects with clear solutions: spelling, overflow, broken links with an unambiguous destination, CMS bindings, alt text, form labels, style inconsistencies. Re-read each change after writing it and check all three breakpoints.
+9. **Buyer guide.** Add a "Getting started" editor-only Design page (never a public route) covering pages and shared layout, styles, CMS fields and filters, form Send To, SEO and AEO setup, and every code-driven section with what must not be renamed. Describe only what you inspected. Keep the layout minimal until a designed guide layout exists.
+10. **Report** in this order: Fixed and verified · Changed, verification pending · Needs your input · Optional improvements · Verification coverage (passed vs not tested). Every finding carries evidence. Never claim the whole template is ready because a subset passed.
 
 ## Playbook
 
@@ -164,6 +165,7 @@ Check these first. Frequency is out of the three audited templates.
 - Dark mode token coverage, if a theme toggle ships.
 - Retina: source width vs rendered width, target 2x. Hero backgrounds are the usual miss.
 - Per-page titles, descriptions, OG images, `noindex` on `/404`, JSON-LD. Full SEO and AEO checks: see SEO and AEO below.
+- Speed on the published URL, mobile first: see Performance below.
 
 #### Cosmetic / hygiene
 
@@ -218,6 +220,70 @@ The Getting started page gets an SEO and AEO card: fill page titles, description
 #### Severity
 
 Costs you a sale: noindex on a real page, a robots.txt that blocks search or AI search crawlers, content missing from the served HTML. Worth doing before release: titles, descriptions, social images, canonicals, sitemap, 404 status, JSON-LD, alt text, anchor text, the buyer-guide card. Cosmetic: Markdown output tidiness.
+
+### Performance
+
+Written Oct 12 2026 from a pass over 11 templates (33 pages across Framer, Astro and Next.js builds) and from docs fetched that day. Thresholds and Framer's image pipeline change: re-check the linked sources before relying on any line here.
+
+The model: a buyer judges speed by pasting the preview URL into [PageSpeed Insights](https://pagespeed.web.dev/). So PageSpeed Insights gives the number of record, and local Lighthouse is the tool for finding causes. Run both.
+
+#### Measure
+
+Test the published URL. Speed cannot be measured on the canvas or in the editor preview. Cover the home page and the heaviest page type (a CMS index, a page with video).
+
+1. **Local Lighthouse, three runs per page, mobile.** Take the median and keep the range.
+
+```bash
+for i in 1 2 3; do
+  npx -y lighthouse@12 <url> --only-categories=performance \
+    --output=json --output-path=lh-$i.json \
+    --chrome-flags="--headless=new" --quiet
+done
+```
+
+Add `--preset=desktop` for the desktop pass. From each JSON read the score, FCP, LCP, TBT, CLS, which element is the LCP, and the transfer size by type (script, image, font, media) from the `network-requests` audit.
+
+2. **PageSpeed Insights, mobile and desktop.** Run each page in the web UI and keep the report permalink as evidence. Its lab test runs in a Google datacenter and emulates a mid-tier phone on a mobile network, so it will not match a local run ([about PSI](https://developers.google.com/speed/docs/insights/v5/about)). A template preview has no field data; say the numbers are lab only.
+
+Rules that came from getting it wrong:
+
+- **Run one test at a time.** Lighthouse measures CPU work, and tests that share a CPU inflate TBT and LCP. Parallel PageSpeed tabs produced a 26s TBT that was noise.
+- **One run is not a result.** The spread between runs was 5 to 10 points on most pages, and one Framer page scored 72, 93 and 62 in three consecutive local runs. Report the median and the range.
+- **Local and PageSpeed disagree.** The same Framer page was 88 to 96 locally and 72 to 73 on PageSpeed. Report both, labelled.
+- **The keyless PageSpeed API returns 429 quickly.** Use the web UI, and expect it to stall after about a dozen runs in one sitting.
+
+#### Reading the numbers
+
+- Score: 90 to 100 is green, 50 to 89 orange, 0 to 49 red. LCP, TBT and CLS carry most of the weight ([scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)).
+- Core Web Vitals: LCP good at 2.5s or less and poor above 4s, CLS good at 0.1 or less and poor above 0.25, INP good at 200ms or less ([PSI thresholds](https://developers.google.com/speed/docs/insights/v5/about), [Web Vitals](https://web.dev/articles/vitals)). INP is a field metric; in a lab run TBT stands in for it.
+- Mobile is where templates fail, and LCP is what fails them. Across the 11 Framer templates mobile scores ran from 35 to 93, with LCP usually between 5 and 14 seconds. Desktop was mostly green.
+
+#### What to look for in the Framer project
+
+| Cause | Evidence | Fix |
+|---|---|---|
+| Hero video is the LCP | Media bytes in the first requests. One template shipped a 9MB hero clip. | Re-encode the same clip at a lower bitrate and show a poster first. Framer recommends YouTube or Vimeo embeds, or a thumbnail variant that swaps to the video on scroll ([lazy loading](https://www.framer.com/help/articles/how-to-natively-lazy-load-videos-or-images/)). |
+| Image resolution forced | Fill → Image → Resolution set to Large or Full on an image shown small. | Set it to Auto. Framer then serves resized AVIF with `srcset` ([image optimization](https://www.framer.com/help/articles/how-are-images-optimized-in-framer/)). |
+| Images below the fold load at the start | Image requests before any scroll. Lapse loaded four 2048px images shown at 310 to 440px, 407KB up front. | Framer lazy-loads most images below the fold, but not images inside code components, inside smart components whose visible or layout properties are driven by variables, or inside CMS formatted text ([lazy loading](https://www.framer.com/help/articles/how-to-natively-lazy-load-videos-or-images/)). There is no toggle: the fix is a rebuild or code. Report as Needs your input. |
+| High TBT | Script bytes and long tasks in the first seconds. Two templates had a 1.6s TBT. | A heavy code component or effect on the first screen. Name the component. Report as Needs your input. |
+| Fonts | Font bytes, families and weights that no style uses, render-blocking Google Fonts CSS. | Remove unused families and weights (ask first, per Boundaries). |
+| Lottie or embeds below the fold | Their requests appear before any scroll. | Load on scroll into view, or report. |
+
+The ceiling: Framer ships its own runtime, 370 to 490KB of script on the pages measured, and a template cannot remove it. Never promise a score.
+
+#### Fixes
+
+- **No design change.** Same images, same fonts, same motion, same layout. Only how the files are delivered changes. Check all three breakpoints afterwards.
+- **Prove the gain before a rebuild.** Block the suspect requests (`--blocked-url-patterns`) and re-measure. If the difference is smaller than the spread between runs, the fix is not confirmed. On Lapse the four eager images looked like the cause, the blocked runs did not confirm it, and the section was left alone.
+- **A speed fix is verified only after a publish and a fresh measurement.** Until then it is "Changed, verification pending". The owner publishes.
+
+#### Severity
+
+Costs you a sale: a red mobile score on PageSpeed, or a first screen that stays empty for seconds. Worth doing before release: an orange mobile score, a heavy hero video, forced image resolution, eager images below the fold, unused fonts. Holding: green on mobile and desktop.
+
+#### Report
+
+One table, a row per page and form factor: PageSpeed score and permalink, local median and range, LCP, TBT, CLS, the LCP element, page weight. State how many runs each number comes from.
 
 ### Beyond the site
 
