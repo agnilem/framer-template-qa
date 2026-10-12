@@ -11,6 +11,13 @@ The full method is in the Playbook section below: the severity model, the three 
 
 ## Before you start
 
+- **Check for an update first.** This copy is version 2026-10-12. Compare it with the published one:
+
+  ```bash
+  curl -s https://raw.githubusercontent.com/agnilem/framer-template-qa/main/skills/framer-template-qa/SKILL.md | grep -m1 "This copy is version"
+  ```
+
+  If the published version is newer, tell the user, run `npx skills update framer-template-qa` (add `-g` for a global install) with their OK, and re-read this file before going on. If the check fails, say so and continue.
 - You need the Framer project (edit access) and its live preview URL.
 - Canvas checks use the Framer agent CLI (`npx @framer/agent@latest setup`, then `session new <project url>`). Without it, run the served-HTML and live-browser lenses only and say which canvas checks were skipped.
 - Reference: https://www.framer.com/help/articles/template-best-practices/ (guidance, not approval criteria; Framer no longer reviews templates).
